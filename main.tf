@@ -11,10 +11,10 @@ resource "azurerm_private_dns_resolver" "this" {
 }
 
 resource "azurerm_private_dns_resolver_inbound_endpoint" "this" {
-  for_each = { for key, value in var.inbound_endpoints : value.name => value }
+  for_each = { for key, value in var.inbound_endpoints : coalesce(value.name, key) => value }
 
   location                = local.location
-  name                    = coalesce(each.value.name, "in-${each.key}-dnsResolver-inbound")
+  name                    = each.key
   private_dns_resolver_id = azurerm_private_dns_resolver.this.id
 
   ip_configurations {
@@ -29,13 +29,13 @@ resource "azurerm_private_dns_resolver_inbound_endpoint" "this" {
 }
 
 resource "azurerm_private_dns_resolver_outbound_endpoint" "this" {
-  for_each = { for key, value in var.outbound_endpoints : value.name => value }
+  for_each = { for key, value in var.outbound_endpoints : coalesce(value.name, key) => value }
 
   location                = local.location
-  name                    = coalesce(each.value.name, "out-${each.key}-dnsResolver-outbound")
+  name                    = each.key
   private_dns_resolver_id = azurerm_private_dns_resolver.this.id
   subnet_id               = "${var.virtual_network_resource_id}/subnets/${each.value.subnet_name}"
-  
+
   lifecycle {
     ignore_changes = [tags]
   }
@@ -58,7 +58,7 @@ resource "azurerm_private_dns_resolver_dns_forwarding_ruleset" "this" {
 
   lifecycle {
     replace_triggered_by = [terraform_data.outbound[each.key]]
-    ignore_changes = [tags]
+    ignore_changes       = [tags]
   }
 }
 
