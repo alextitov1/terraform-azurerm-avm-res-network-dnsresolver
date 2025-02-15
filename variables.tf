@@ -146,10 +146,3 @@ variable "role_assignments" {
   DESCRIPTION
   nullable    = false
 }
-
-# tflint-ignore: terraform_unused_declarations
-variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "(Optional) Tags of the resource."
-}
